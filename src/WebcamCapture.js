@@ -1,8 +1,8 @@
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback } from "react";
 import "./WebcamCapture.css";
 import Webcam from "react-webcam";
 import RadioButtonUncheckedOutlinedIcon from "@mui/icons-material/RadioButtonUncheckedOutlined";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setCameraImage } from "./features/cameraSlice";
 import { useNavigate } from "react-router-dom";
 
