@@ -12,15 +12,74 @@ import AttachFileOutlinedIcon from "@mui/icons-material/AttachFileOutlined";
 import CropOutlinedIcon from "@mui/icons-material/CropOutlined";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
+import { v4 as uuidv4 } from "uuid";
+import { storage, db } from "./firebase";
+import {
+  doc,
+  addDoc,
+  setDoc,
+  collection,
+  serverTimestamp,
+} from "firebase/firestore";
+import {
+  uploadString,
+  uploadBytes,
+  uploadBytesResumable,
+  getDownloadURL,
+  ref,
+} from "firebase/storage";
 
 function Preview() {
   const cameraImage = useSelector(selectCameraImage);
+  console.log(cameraImage);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const closePreview = () => {
     dispatch(resetCameraImage());
     navigate("../");
+  };
+
+  const sendPost = async () => {
+    const id = uuidv4();
+    const storageRef = ref(storage, `posts/${id}`);
+    const uploadTask = await uploadString(storageRef, cameraImage, "data_url");
+    const url = await getDownloadURL(uploadTask.ref);
+
+    //finally add the document to the DB
+    await setDoc(
+      doc(db, "posts", id),
+      {
+        imageUrl: url,
+        username: "Apollo",
+        read: false,
+        //profilePic,
+        timestamp: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    navigate("../Chats");
+
+    // uploadTask.on(
+    //   "state_changed",
+    //   null,
+    //   (error) => {
+    //     console.log(error);
+    //   },
+    //   () => {
+    //     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+    //       console.log(downloadURL);
+    //       await setDoc(doc(db, "posts", id), {
+    //         timestamp: serverTimestamp(),
+    //         imageUrl: downloadURL,
+    //         userName: "Manish",
+    //         read: false,
+    //       });
+    //       navigate(-1);
+    //     });
+    //   }
+    // );
   };
 
   useEffect(() => {
@@ -42,7 +101,7 @@ function Preview() {
         <TimerOutlinedIcon />
       </div>
       <img src={cameraImage} alt="" />
-      <div className="preview__footer">
+      <div onClick={sendPost} className="preview__footer">
         <h2>Send Now</h2>
         <SendOutlinedIcon fontSize="smaller" className="preview__sendIcon" />
       </div>
